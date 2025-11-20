@@ -1,0 +1,18 @@
+# Foldere generate de IntelliJ (nu ne trebuie)
+.idea/
+*.iml
+*.iws
+
+# Folderul de compilare Java (e mare si inutil pe git)
+gateway-java/target/
+**/target/
+
+# Folderul de compilare Rust (e imens)
+aggregator-rust/target/
+
+# Secrete (Nu urca parolele pe net!)
+.env
+
+# Loguri si fisiere temporare
+*.log
+.DS_Store
