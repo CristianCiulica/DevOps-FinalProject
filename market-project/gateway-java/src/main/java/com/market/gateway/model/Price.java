@@ -18,7 +18,6 @@ public class Price {
     private Double averagePrice;
     private Boolean isAnomaly;
 
-    // AM SCHIMBAT AICI: Din LocalDateTime in ZonedDateTime
     private ZonedDateTime timestamp;
 
     @PrePersist
