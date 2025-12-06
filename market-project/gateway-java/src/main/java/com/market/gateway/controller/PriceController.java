@@ -37,7 +37,10 @@ public class PriceController {
         return ResponseEntity.ok("Data received");
     }
     @GetMapping("/prices")
-    public List<Price> getAllPrices() {
+    public List<Price> getAllPrices(@RequestParam(required = false) String symbol) {
+        if (symbol != null && !symbol.isEmpty()) {
+            return priceRepository.findTop50BySymbolOrderByTimestampDesc(symbol);
+        }
         return priceRepository.findTop50ByOrderByTimestampDesc();
     }
 }
