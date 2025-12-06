@@ -1,6 +1,5 @@
 package com.market.gateway.service;
-import com.market.gateway.model.Price;
-import com.market.gateway.repository.PriceRepository;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -8,37 +7,32 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.List;
 
 @Service
 public class GeminiService {
 
-    private final PriceRepository priceRepository;
-
     @Value("${groq.api.key}")
     private String apiKey;
+
     private final String GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
     private final String FEAR_GREED_API = "https://api.alternative.me/fng/?limit=1";
 
-    public GeminiService(PriceRepository priceRepository) {
-        this.priceRepository = priceRepository;
-    }
-
-    public String getMarketPrediction() {
+    public String getMarketPrediction(String symbol) {
         try {
-            List<Price> history = priceRepository.findTop50ByOrderByTimestampDesc();
-            if (history.isEmpty()) return "Waiting for price data...";
-            double currentPrice = history.get(0).getPrice();
-
+            // 1. Luăm sentimentul pieței (Fear/Greed) ca să pară că știe despre ce vorbește
             String fearAndGreedData = fetchFearAndGreed();
-            String promptText = "You are a crypto expert. Bitcoin is $" + currentPrice +
-                    ". Market Sentiment: " + fearAndGreedData + ". " +
-                    "Give a short investment advice (Buy/Sell/Hold) and a brief reason. Max 2 sentences.";
+
+            // 2. PROMPT STRICT: Fără prețuri, doar HYPE
+            String promptText = "You are a hyper-energetic Crypto YouTuber shilling " + symbol + ". " +
+                    "The market sentiment is " + fearAndGreedData + ". " +
+                    "Don't mention specific prices. Just give a super bullish, exciting 2-sentence update. " +
+                    "Use slang like 'LFG', 'To the Moon', 'Rocket', '100x soon'. " +
+                    "Tell the viewers why " + symbol + " is the best investment right now!";
 
             return callGroq(promptText);
 
         } catch (Exception e) {
-            return "Analysis Error: " + e.getMessage();
+            return "Hype Error: " + e.getMessage();
         }
     }
 
@@ -46,8 +40,9 @@ public class GeminiService {
         String jsonBody = "{"
                 + "\"model\": \"llama-3.3-70b-versatile\","
                 + "\"messages\": [{\"role\": \"user\", \"content\": \"" + text + "\"}],"
-                + "\"temperature\": 0.7"
+                + "\"temperature\": 0.9" // Temperature mai mare = mai creativ/nebun
                 + "}";
+
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(GROQ_URL))
@@ -63,10 +58,11 @@ public class GeminiService {
             int start = body.indexOf("\"content\":") + 11;
             int end = body.indexOf("\"", start);
             String result = body.substring(start, end);
+            // Curățăm caracterele speciale JSON
             return result.replace("\\n", " ").replace("\\\"", "\"");
         }
 
-        return "Groq Error: " + body;
+        return "Groq API Error";
     }
 
     private String fetchFearAndGreed() {
@@ -77,11 +73,9 @@ public class GeminiService {
             String body = response.body();
 
             if(body.contains("\"value\":")) {
-                int valIndex = body.indexOf("\"value\":") + 9;
-                String value = body.substring(valIndex, body.indexOf("\"", valIndex));
                 int classIndex = body.indexOf("\"value_classification\":") + 24;
                 String classification = body.substring(classIndex, body.indexOf("\"", classIndex));
-                return value + " (" + classification + ")";
+                return classification;
             }
             return "Neutral";
         } catch (Exception e) {
