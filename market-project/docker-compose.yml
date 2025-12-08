@@ -1,36 +1,56 @@
 version: '3.8'
 
 services:
-  postgres:
+  db:
     image: postgres:15-alpine
     container_name: market-db
     environment:
-      POSTGRES_USER: student
-      POSTGRES_PASSWORD: secretpassword123
       POSTGRES_DB: market_data
+      POSTGRES_USER: student
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U student -d market_data"]
       interval: 5s
       timeout: 5s
       retries: 5
-
-  java-gateway:
+    networks:
+      - market-net
+  gateway:
     build: ./gateway-java
     container_name: java-gateway
     ports:
       - "8080:8080"
     environment:
-      POSTGRES_USER: student
-      POSTGRES_PASSWORD: secretpassword123
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/market_data
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/market_data
+      SPRING_DATASOURCE_USERNAME: student
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      GROQ_API_KEY: ${GROQ_API_KEY}
     depends_on:
-      postgres:
+      db:
         condition: service_healthy
+    networks:
+      - market-net
 
-  rust-aggregator:
+  aggregator:
     build: ./aggregator-rust
     container_name: rust-aggregator
+    environment:
+
+      GATEWAY_URL: http://java-gateway:8080/api/ingest
     depends_on:
-      - java-gateway
+      - gateway
+    networks:
+      - market-net
+
+
+volumes:
+  postgres_data:
+
+networks:
+  market-net:
+    driver: bridge

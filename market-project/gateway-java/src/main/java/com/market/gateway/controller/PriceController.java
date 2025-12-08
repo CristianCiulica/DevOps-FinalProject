@@ -25,17 +25,20 @@ public class PriceController {
         this.messagingTemplate = messagingTemplate;
         this.geminiService = geminiService;
     }
+
     @GetMapping("/ai-analysis")
-    public ResponseEntity<String> getAiAnalysis() {
-        String analysis = geminiService.getMarketPrediction();
+    public ResponseEntity<String> getAiAnalysis(@RequestParam(defaultValue = "BTC-USD") String symbol) {
+        String analysis = geminiService.getMarketPrediction(symbol);
         return ResponseEntity.ok(analysis);
     }
+
     @PostMapping("/ingest")
     public ResponseEntity<String> ingestPrice(@RequestBody Price price) {
         priceRepository.save(price);
         messagingTemplate.convertAndSend("/topic/prices", price);
         return ResponseEntity.ok("Data received");
     }
+
     @GetMapping("/prices")
     public List<Price> getAllPrices(@RequestParam(required = false) String symbol) {
         if (symbol != null && !symbol.isEmpty()) {

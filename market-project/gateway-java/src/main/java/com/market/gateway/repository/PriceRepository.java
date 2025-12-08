@@ -7,9 +7,6 @@ import java.util.List;
 
 @Repository
 public interface PriceRepository extends JpaRepository<Price, Long> {
-    // Metoda veche (poate rămâne)
     List<Price> findTop50ByOrderByTimestampDesc();
-
-    // NOU: Metoda pentru a lua istoricul doar pentru moneda selectată
     List<Price> findTop50BySymbolOrderByTimestampDesc(String symbol);
 }
