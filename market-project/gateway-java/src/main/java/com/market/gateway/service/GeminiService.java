@@ -19,15 +19,9 @@ public class GeminiService {
 
     public String getMarketPrediction(String symbol) {
         try {
-            // 1. Luăm sentimentul pieței (Fear/Greed) ca să pară că știe despre ce vorbește
-            String fearAndGreedData = fetchFearAndGreed();
+           String fearAndGreedData = fetchFearAndGreed();
 
-            // 2. PROMPT STRICT: Fără prețuri, doar HYPE
-            String promptText = "You are a hyper-energetic Crypto YouTuber shilling " + symbol + ". " +
-                    "The market sentiment is " + fearAndGreedData + ". " +
-                    "Don't mention specific prices. Just give a super bullish, exciting 2-sentence update. " +
-                    "Use slang like 'LFG', 'To the Moon', 'Rocket', '100x soon'. " +
-                    "Tell the viewers why " + symbol + " is the best investment right now!";
+            String promptText = "You are a top level financial advisor, a little bullish on the current price, giving your best possible advice based on fear and greed index and adopting buy when others are fearful mindset.";
 
             return callGroq(promptText);
 
@@ -40,7 +34,7 @@ public class GeminiService {
         String jsonBody = "{"
                 + "\"model\": \"llama-3.3-70b-versatile\","
                 + "\"messages\": [{\"role\": \"user\", \"content\": \"" + text + "\"}],"
-                + "\"temperature\": 0.9" // Temperature mai mare = mai creativ/nebun
+                + "\"temperature\": 0.7"
                 + "}";
 
         HttpClient client = HttpClient.newHttpClient();
@@ -58,11 +52,10 @@ public class GeminiService {
             int start = body.indexOf("\"content\":") + 11;
             int end = body.indexOf("\"", start);
             String result = body.substring(start, end);
-            // Curățăm caracterele speciale JSON
             return result.replace("\\n", " ").replace("\\\"", "\"");
         }
 
-        return "Groq API Error";
+        return "API Error";
     }
 
     private String fetchFearAndGreed() {

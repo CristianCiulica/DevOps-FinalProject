@@ -23,8 +23,6 @@ fn main() {
     let gateway_url = std::env::var("GATEWAY_URL").unwrap_or("http://java-gateway:8080/api/ingest".to_string());
     let client = Client::new();
     let mut rng = rand::thread_rng();
-
-    // Lista de monede pe care le urmărim (Binance Symbols)
     let symbols = vec![
         ("BTCUSDT", "BTC-USD"),
         ("ETHUSDT", "ETH-USD"),
@@ -46,7 +44,6 @@ fn main() {
                         current_price = ticker.price.parse().unwrap_or(0.0);
                         source_label = String::from("Binance-API");
                     } else {
-                        // Fallback random simulat diferit pt fiecare
                         let base = if *display_symbol == "BTC-USD" { 90000.0 } else { 3000.0 };
                         current_price = rng.gen_range(base..base+100.0);
                         source_label = String::from("Backup-Gen");
@@ -58,12 +55,10 @@ fn main() {
                     source_label = String::from("Backup-Gen");
                 }
             }
-
-            // Anomalie simpla (logica poate fi complexa per moneda)
             let anomaly = if *display_symbol == "BTC-USD" {
                 current_price > 99000.0 || current_price < 80000.0
             } else {
-                false // Simplificat pentru restul
+                false
             };
 
             let price_packet = PriceData {
@@ -76,17 +71,11 @@ fn main() {
                     .as_secs(),
                 is_anomaly: anomaly,
             };
-
-            // Trimitem datele
             if let Err(e) = client.post(&gateway_url).json(&price_packet).send() {
-                eprintln!("❌ Failed sending {}: {}", display_symbol, e);
+                eprintln!(" Failed sending {}: {}", display_symbol, e);
             }
-
-            // Mica pauza intre request-uri ca sa nu luam rate limit
             thread::sleep(Duration::from_millis(500));
         }
-
-        // Pauza dupa ce am trecut prin toate monedele
         thread::sleep(Duration::from_secs(3));
     }
 }

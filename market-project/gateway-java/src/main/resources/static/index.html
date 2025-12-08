@@ -12,7 +12,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 
     <style>
-        /* --- THEMING VARIABLES --- */
         :root {
             --bg-body: #f0f2f5;
             --bg-card: #ffffff;
@@ -63,8 +62,6 @@
             border-bottom: 1px solid var(--border-color);
             padding: 1rem;
         }
-
-        /* --- LAYOUT FIXES --- */
         .dashboard-card {
             background-color: var(--bg-card);
             border-radius: 12px;
@@ -85,7 +82,6 @@
             text-align: center;
         }
 
-        /* Coin List */
         .coin-list-item {
             cursor: pointer;
             padding: 12px 16px;
@@ -111,8 +107,6 @@
             margin-right: 12px;
             border: 1px solid var(--border-color);
         }
-
-        /* Charts & Inputs */
         #chartContainer { height: 350px; width: 100%; position: relative; }
         .fg-chart-container { position: relative; height: 140px; display: flex; justify-content: center; align-items: flex-end; }
         .fg-value-overlay { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); text-align: center; }
@@ -123,8 +117,6 @@
             color: var(--text-primary);
         }
         .form-control-theme:focus { background-color: var(--input-bg); color: var(--text-primary); border-color: var(--accent-color); box-shadow: none; }
-
-        /* Compact AI Box Styles */
         .ai-compact-box {
             padding: 15px !important;
             height: auto !important;
@@ -141,7 +133,7 @@
             line-height: 1.5;
             max-height: 150px;
             overflow-y: auto;
-            display: none; /* Ascuns initial */
+            display: none;
         }
 
         .stat-badge {
@@ -167,7 +159,6 @@
         .btn-trade { font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px; }
         .holding-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; width: 100%; }
 
-        /* Typography */
         .text-primary-theme { color: var(--text-primary) !important; }
         .text-secondary-theme { color: var(--text-secondary) !important; }
         .text-muted-theme { color: var(--text-muted) !important; }
@@ -179,9 +170,10 @@
 <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
     <div class="container-fluid px-4">
         <a class="navbar-brand fw-bold d-flex align-items-center text-primary-theme" href="#">
-            <i class="fa-solid fa-layer-group text-accent me-2"></i>
+            <i class="fa-brands fa-bitcoin text-warning me-2"></i>
             Crypto Aggregator
         </a>
+
         <div class="d-flex align-items-center gap-3">
              <span class="badge bg-success bg-opacity-10 text-success d-flex align-items-center px-2 py-1 rounded">
                 <i class="fa-solid fa-circle fa-2xs me-2 animate-pulse"></i> Live
@@ -322,19 +314,16 @@
 </div>
 
 <script>
-    // --- VARIABLES ---
     let currentSymbol = 'BTC-USD';
     let myChart = null;
     let fgChart = null;
     let lastPrices = {};
     const coinDetails = {
-        'BTC-USD': { date: 'Jan 3, 2009', ath: '$73,750.07', atl: '$0.04' },
-        'ETH-USD': { date: 'Jul 30, 2015', ath: '$4,891.70', atl: '$0.42' },
+        'BTC-USD': { date: 'Jan 3, 2009', ath: '$126,350.07', atl: '$0.04' },
+        'ETH-USD': { date: 'Jul 30, 2015', ath: '$5031.70', atl: '$0.42' },
         'SOL-USD': { date: 'Mar 16, 2020', ath: '$260.06', atl: '$0.50' }
     };
-    let portfolio = { active: false, cash: 0, holdings: { 'BTC-USD': 0, 'ETH-USD': 0, 'SOL-USD': 0 } };
-
-    // --- PORTFOLIO LOGIC ---
+    let portfolio = { active: false, cash: 0, holdings: { 'BTC-USD': 0, 'ETH-USD': 0, 'SOL-USD': 0 } }
     function initPortfolio() {
         const input = document.getElementById('initialBalance');
         const amount = parseFloat(input.value);
@@ -406,7 +395,6 @@
         document.getElementById('cashBalance').innerText = "Cash: $" + portfolio.cash.toLocaleString('en-US', {minimumFractionDigits: 2});
     }
 
-    // --- CHART & DATA ---
     function toggleTheme() {
         const html = document.documentElement;
         const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
@@ -527,8 +515,6 @@
         container.style.display = 'block';
         text.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyzing market...';
         btn.disabled = true;
-
-        // Nu mai trimitem intrebare custom, folosim doar analiza automata a backend-ului
         fetch('/api/ai-analysis').then(res => res.text()).then(data => {
             text.innerHTML = "";
             let i = 0;
