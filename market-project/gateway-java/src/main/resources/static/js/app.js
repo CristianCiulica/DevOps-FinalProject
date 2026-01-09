@@ -130,9 +130,17 @@ function initFGChart() {
 }
 
 function fetchFGData() {
-    fetch('https://api.alternative.me/fng/?limit=1').then(r => r.json()).then(d => {
-        if(d.data.length > 0) updateFGChart(d.data[0].value, d.data[0].value_classification);
-    });
+    fetch('https://api.alternative.me/fng/?limit=1')
+        .then(r => r.json())
+        .then(d => {
+            if (d.data.length > 0) {
+                updateFGChart(d.data[0].value, d.data[0].value_classification);
+            }
+        })
+        .catch(err => {
+            console.error("Eroare la preluarea Fear & Greed:", err);
+            updateFGChart(50, "Neutral");
+        });
 }
 
 function updateFGChart(val, text) {

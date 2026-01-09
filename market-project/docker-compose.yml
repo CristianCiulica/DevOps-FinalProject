@@ -19,6 +19,19 @@ services:
       retries: 5
     networks:
       - market-net
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: market-rabbitmq
+    ports:
+      - "5672:5672"   # Portul de mesagerie
+      - "15672:15672" # Interfata vizuala (Dashboard)
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - market-net
+
   gateway:
     build: ./gateway-java
     container_name: java-gateway
@@ -30,9 +43,16 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       GROQ_API_KEY: ${GROQ_API_KEY}
+      # Configurare RabbitMQ pentru Java
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
     depends_on:
       db:
         condition: service_healthy
+      rabbitmq:
+        condition: service_started
     networks:
       - market-net
 
@@ -40,13 +60,12 @@ services:
     build: ./aggregator-rust
     container_name: rust-aggregator
     environment:
-
-      GATEWAY_URL: http://java-gateway:8080/api/ingest
+      RABBITMQ_ADDR: amqp://guest:guest@rabbitmq:5672/%2f
     depends_on:
       - gateway
+      - rabbitmq
     networks:
       - market-net
-
 
 volumes:
   postgres_data:
