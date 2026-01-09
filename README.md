@@ -150,4 +150,4 @@ The PostgreSQL database initializes with the following structure:
 
 ## License
 
-This project is developed for educational purposes as part of a Distributed Systems course.
+This project is developed for educational purposes
