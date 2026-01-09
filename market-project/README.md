@@ -1,172 +1,153 @@
-# Market Aggregator Project – Documentation
+# Crypto Market Data Aggregator & Trading Dashboard
 
-This documentation describes the project's current functionality (based on the code in the repository), including services, endpoints, WebSocket implementation, Docker Compose orchestration, Postgres persistence, and observability.
+![Java](https://img.shields.io/badge/Java-17-007396?style=flat-square&logo=java&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2-6DB33F?style=flat-square&logo=spring&logoColor=white)
+![Rust](https://img.shields.io/badge/Rust-1.7-000000?style=flat-square&logo=rust&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?style=flat-square&logo=postgresql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker&logoColor=white)
 
-—
+## Project Overview
 
-## Quick Summary
+This project is a cloud-native, polyglot distributed system designed for real-time aggregation, analysis, and visualization of cryptocurrency market data. It demonstrates a microservices architecture where high-performance data processing is handled by **Rust**, business logic and security by **Java Spring Boot**, and persistence by **PostgreSQL**.
 
-- Microservices:
-  - Java Gateway (Spring Boot): REST + WebSocket + JPA.
-  - Rust Aggregator: Collects prices (Binance or fallback) and sends them to the gateway.
-  - Postgres: Data storage.
-- Frontend: Simple static `index.html` file, live display via WebSocket (STOMP).
-- Deployment: Docker Compose.
+The system simulates a high-frequency trading environment where market data is ingested, processed for anomalies and technical indicators (Moving Averages), and broadcasted to a web client via **WebSockets** with low latency.
 
-—
+---
 
-## How to Run
+## System Architecture
+
+The solution consists of three main containerized services orchestrated via Docker Compose:
+
+1.  **Aggregator Service (Rust)**
+    * Acts as the data ingestion engine.
+    * Fetches live market data from external APIs (Binance).
+    * **Data Processing:** Maintains an in-memory sliding window to calculate a 5-point Moving Average (MA) for each asset.
+    * **Anomaly Detection:** Algorithmic detection of price spikes (>5% deviation from the MA).
+    * Transmits processed payloads (Price + MA + Anomaly Flags) to the Gateway via HTTP.
+
+2.  **Gateway Service (Java Spring Boot)**
+    * **API Layer:** REST API for historical data retrieval and AI analysis.
+    * **Security:** Implements full authentication and authorization using Spring Security backed by PostgreSQL (BCrypt password hashing).
+    * **Real-time Broker:** Uses STOMP over WebSockets to broadcast updates to connected clients immediately upon ingestion.
+    * **Persistence:** Stores raw price data, calculated metrics, and detected alerts in the database.
+
+3.  **Database (PostgreSQL)**
+    * Relational storage for:
+        * `users`: Account credentials and roles.
+        * `prices`: Time-series data for assets.
+        * `alerts`: Audit log of detected market anomalies.
+
+---
+
+## Key Features
+
+### 1. Data Aggregation & Analysis
+Unlike simple proxy applications, the Rust microservice performs edge computing:
+* **Moving Average Calculation:** Computes the trend line dynamically before data reaches the database.
+* **Statistical Anomaly Detection:** Filters noise and flags significant market events automatically.
+
+### 2. Security & Authentication
+* **Database-backed Authentication:** Not limited to in-memory users.
+* **Registration Flow:** Fully functional user registration system (`/register.html`) with duplicate user checks.
+* **Session Management:** Secure login/logout flows with encrypted passwords.
+
+### 3. Real-Time Visualization
+* **Dual-Line Charting:** Visualizes both the raw price (Blue) and the Rust-calculated Moving Average (Orange/Dotted) simultaneously.
+* **Live Updates:** The frontend updates via WebSocket push notifications, eliminating the need for page refreshing.
+
+### 4. AI Market Sentiment
+* Integration with **Llama 3 (via Groq API)** to provide contextual market analysis.
+* The system uses a custom prompt engineering strategy to generate professional, "late-cycle bull market" technical analysis summaries.
+
+---
+
+## Technical Stack
+
+* **Backend:** Java 17, Spring Boot 3.2, Spring Security, Spring Data JPA, Lombok.
+* **Aggregator:** Rust (edition 2021), Reqwest (HTTP Client), Serde (Serialization).
+* **Database:** PostgreSQL 15.
+* **Frontend:** HTML5, Bootstrap 5, Chart.js, SockJS, STOMP.
+* **DevOps:** Docker, Docker Compose, GitHub Actions (CI/CD).
+
+---
+
+## Getting Started
 
 ### Prerequisites
+* Docker Desktop (Engine 20.10+)
+* Docker Compose
 
-- Docker Desktop
-- Optional: Java 17, Maven, Rust (for local development)
+### Installation & Running
 
-### Relevant Files
+1.  **Clone the repository:**
+    ```bash
+    git clone <repository-url>
+    cd market-project
+    ```
 
-- `docker-compose.yml`
-- `gateway-java/Dockerfile`, `aggregator-rust/Dockerfile`
-- `.env` (Contains variables: `DB_PASSWORD`, `GROQ_API_KEY`)
+2.  **Clean previous volumes (Recommended):**
+    This ensures the database schema is initialized correctly with the new user tables.
+    ```bash
+    docker compose down -v
+    ```
 
-### Steps
+3.  **Build and Start:**
+    This command compiles the Java JAR and the Rust binary inside their respective containers.
+    ```bash
+    docker compose up --build
+    ```
 
-```powershell
-# Start all services (build + run)
-cd market-project
-docker compose --env-file .env up --build -d
+4.  **Access the Application:**
+    * Navigate to: `http://localhost:8080`
+    * You will be redirected to the Login page.
 
-# Check status
-docker compose ps
+### Default Credentials
+The application includes a `DataInitializer` that seeds a demo account upon startup:
+* **Username:** `student`
+* **Password:** `student`
 
-# Logs (useful for debugging)
-docker compose logs -f java-gateway ; docker compose logs -f rust-aggregator ; docker compose logs -f market-db
+Alternatively, you can create a new account using the **"Create one"** link on the login page.
 
-# Stop + clean DB volumes (Warning: deletes data)
-docker compose down -v
-```
+---
 
-### Access
+## API Documentation
 
-- REST API Gateway: http://localhost:8080
-- WebSocket STOMP endpoint: ws://localhost:8080/ws-market (Topic: `/topic/prices`)
-- Dashboard: http://localhost:8080/index.html
-- Postgres: Mapped port 5432 (Container `market-db`)
+The Java Gateway exposes the following REST endpoints:
 
-—
+### Public / Ingestion
+* `POST /api/ingest`
+    * Used by the Rust Aggregator to send processed data.
+    * Payload: `{ "symbol": "BTC-USD", "price": 90000.0, "averagePrice": 89500.0, "isAnomaly": false }`
 
-## Current Architecture
+### Protected (Requires Auth)
+* `GET /api/prices?symbol={symbol}`
+    * Returns the last 50 data points for a specific asset (reversed chronological order).
+* `GET /api/ai-analysis?symbol={symbol}`
+    * Triggers the AI service to generate a text-based analysis of the asset.
+* `POST /perform_register`
+    * Handles new user creation.
 
-1. **Gateway (Java Spring Boot)**
-   - **Controller:** `PriceController`
-     - `POST /api/ingest`: Receives prices from the aggregator and saves them; broadcasts via WebSocket to `/topic/prices`.
-     - `GET /api/prices`: Returns the last 50 prices; supports optional filtering `?symbol=...`.
-     - `GET /api/ai-analysis`: Calls `GeminiService` for text analysis (uses `GROQ_API_KEY`).
-   - **WebSocket:** `WebSocketConfig`
-     - STOMP endpoint: `/ws-market` (SockJS enabled).
-     - Simple broker: `/topic`.
-   - **Persistence:** Price entity (table `prices`) with fields:
-     - `id`, `symbol`, `price`, `averagePrice`, `isAnomaly`, `timestamp`.
-     - `timestamp` is automatically set on insert if missing.
-   - **Repository:** `PriceRepository`
-     - `findTop50ByOrderByTimestampDesc()`
-     - `findTop50BySymbolOrderByTimestampDesc(symbol)`
-   - **App Config:** `application.properties`
-     - `server.port=8080`
-     - `spring.jpa.hibernate.ddl-auto=update`
-     - Springdoc (Swagger UI) active: `/swagger-ui.html`, docs: `/api-docs`.
+---
 
-2. **Aggregator (Rust)**
-   - `main.rs`: Continuous loop over symbols: BTCUSDT, ETHUSDT, SOLUSDT, ADAUSDT.
-   - Attempts to read current price from `https://api.binance.com/api/v3/ticker/price?symbol=...`.
-     - On failure, generates fallback prices (random) around base values.
-   - **Simple Anomaly Detection:**
-     - For BTC-USD: `price > 99000.0 || price < 80000.0`.
-     - For other symbols: `false`.
-   - **JSON Construction:** `{ symbol, price, source, timestamp, is_anomaly }`.
-   - **Transmission:** Sends via HTTP POST to Gateway: `GATEWAY_URL` (default: `http://java-gateway:8080/api/ingest`).
-   - **Interval:** ~500ms between symbols and ~3s at the end of the cycle.
+## CI/CD Pipeline
 
-3. **Postgres (Database)**
-   - Image: `postgres:15-alpine`.
-   - Variables: `POSTGRES_DB=market_data`, `POSTGRES_USER=student`, `POSTGRES_PASSWORD` from `.env`.
-   - Healthcheck: `pg_isready`.
+The project includes a GitHub Actions workflow (`maven.yml`) that validates the integrity of the codebase.
+* **Build:** Compiles the Java application.
+* **Test:** Runs unit tests (if applicable).
+* **Containerization:** Verifies that the Docker image can be built successfully.
 
-4. **Orchestration (`docker-compose.yml`)**
-   - Services: `db`, `gateway`, `aggregator`.
-   - Network: `market-net`.
-   - `gateway` depends on `db` (service_healthy).
-   - `aggregator` depends on `gateway`.
+---
 
-—
+## Database Schema
 
-## Exposed Endpoints (Current Implementation)
+The PostgreSQL database initializes with the following structure:
 
-- `POST /api/ingest`
-  - JSON Body (accepted by `PriceController` via `Price` entity):
-    - Minimum valid example: `{ "symbol": "BTC-USD", "price": 91000.0, "averagePrice": 0, "isAnomaly": false, "timestamp": "2024-01-01T00:00:00Z" }`
-    - Note: Aggregator sends `timestamp` as UNIX seconds (number), but `Price.timestamp` is `ZonedDateTime`. Hibernate attempts mapping. If errors occur, adapt the timestamp format in the aggregator or the DTO.
-  - Effect: Saves to DB, broadcasts via WebSocket to `/topic/prices`.
+* **Table `users`**: `id`, `username`, `password` (hashed), `role`.
+* **Table `prices`**: `id`, `symbol`, `price`, `average_price`, `is_anomaly`, `timestamp`.
+* **Table `alerts`**: `id`, `symbol`, `triggered_price`, `message`, `timestamp`.
 
-- `GET /api/prices`
-  - Optional Parameter: `symbol`.
-  - Returns: List (max 50) ordered descending by `timestamp`.
+---
 
-- `GET /api/ai-analysis?symbol=BTC-USD`
-  - Returns: A string (result from `GeminiService`) – depends on `GROQ_API_KEY`.
+## License
 
-**WebSocket:**
-
-- Endpoint: `/ws-market` (STOMP with SockJS).
-- Broadcast Topic: `/topic/prices`.
-
-—
-
-## Frontend (Dashboard)
-
-- File: `gateway-java/src/main/resources/static/index.html`.
-- Uses STOMP/SockJS at endpoint `/ws-market` and listens on `/topic/prices`.
-- Displays live prices and highlights the `isAnomaly` field.
-- Simple interface, suitable for real-time demonstration.
-
-—
-
-## Observability (Current State)
-
-- Spring Boot Actuator is listed in `pom.xml`, but no additional configuration exists in `application.properties`; the base endpoint `/actuator/health` should be available.
-- No custom metrics (latency, throughput) exposed in Java or Rust code.
-- Logs are default (not structured JSON).
-
-—
-
-## Docker Compose – Details and Observations
-
-- Gateway receives the following env vars in compose:
-  - `SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/market_data`
-  - `SPRING_DATASOURCE_USERNAME=student`
-  - `SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}`
-  - `SPRING_JPA_HIBERNATE_DDL_AUTO=update`
-  - `GROQ_API_KEY=${GROQ_API_KEY}`
-- `application.properties` has `spring.datasource.url=jdbc:postgresql://postgres:5432/market_data` and user/pass from `${POSTGRES_USER}`/`${POSTGRES_PASSWORD}` – this may conflict with what compose sends (host `db` vs `postgres`). Inside containers, the service is named `db`.
-
-—
-
-## Technologies Used
-
-- **Gateway:** Spring Boot 3.2, Web, WebSocket (STOMP + SockJS), Spring Data JPA, PostgreSQL, Springdoc OpenAPI, Actuator, Lombok.
-- **Aggregator:** Rust, `reqwest` (blocking client), `serde`, `rand`.
-- **DB:** Postgres 15.
-- **Orchestration:** Docker Compose
-- **Frontend:** HTML, JavaScript, CSS
-
-—
-## Future Improvements
-- Add structured logging (JSON) for better log management.
-- Implement custom metrics (latency, throughput) in both services.
-- Enhance anomaly detection logic in the Rust aggregator.
-- Improve frontend UI for better user experience.
-- Add unit and integration tests for services.
-- Implement error handling and retries in the Rust aggregator for network failures.
-- Secure WebSocket connections (WSS) for production environments.
-- Add authentication and authorization for REST endpoints.
-- Implement database migrations (e.g., Flyway or Liquibase) for better schema management.
-
+This project is developed for educational purposes as part of a Distributed Systems course.

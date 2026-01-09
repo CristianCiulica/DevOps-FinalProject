@@ -7,163 +7,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/style.css">
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-
-    <style>
-        :root {
-            --bg-body: #f0f2f5;
-            --bg-card: #ffffff;
-            --bg-hover: #eef2ff;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --text-muted: #94a3b8;
-            --border-color: #e2e8f0;
-            --accent-color: #3b82f6;
-            --accent-hover: #2563eb;
-            --success-color: #10b981;
-            --danger-color: #ef4444;
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            --input-bg: #ffffff;
-            --input-border: #ced4da;
-            --stat-bg: #f8fafc;
-            --info-box-bg: #f8fafc;
-        }
-
-        [data-theme="dark"] {
-            --bg-body: #0f172a;
-            --bg-card: #1e293b;
-            --bg-hover: #334155;
-            --text-primary: #f8fafc;
-            --text-secondary: #cbd5e1;
-            --text-muted: #64748b;
-            --border-color: #334155;
-            --accent-color: #60a5fa;
-            --accent-hover: #3b82f6;
-            --input-bg: #0f172a;
-            --input-border: #475569;
-            --stat-bg: #334155;
-            --info-box-bg: #0f172a;
-        }
-
-        body {
-            background-color: var(--bg-body);
-            color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
-            transition: background-color 0.3s ease, color 0.3s ease;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .navbar-custom {
-            background-color: var(--bg-card) !important;
-            border-bottom: 1px solid var(--border-color);
-            padding: 1rem;
-        }
-        .dashboard-card {
-            background-color: var(--bg-card);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--border-color);
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .portfolio-center-wrapper {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-        }
-
-        .coin-list-item {
-            cursor: pointer;
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.2s;
-        }
-        .coin-list-item:hover { background-color: var(--bg-hover); transform: translateX(2px); }
-        .coin-list-item.active {
-            background-color: var(--bg-hover);
-            border-left: 4px solid var(--accent-color);
-        }
-        .coin-icon {
-            width: 32px; height: 32px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            background: var(--bg-body);
-            margin-right: 12px;
-            border: 1px solid var(--border-color);
-        }
-        #chartContainer { height: 350px; width: 100%; position: relative; }
-        .fg-chart-container { position: relative; height: 140px; display: flex; justify-content: center; align-items: flex-end; }
-        .fg-value-overlay { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); text-align: center; }
-
-        .form-control-theme {
-            background-color: var(--input-bg);
-            border-color: var(--input-border);
-            color: var(--text-primary);
-        }
-        .form-control-theme:focus { background-color: var(--input-bg); color: var(--text-primary); border-color: var(--accent-color); box-shadow: none; }
-        .ai-compact-box {
-            padding: 15px !important;
-            height: auto !important;
-            justify-content: center;
-        }
-        .ai-response-box {
-            background-color: var(--bg-body);
-            border-left: 3px solid var(--accent-color);
-            padding: 12px;
-            border-radius: 6px;
-            margin-top: 15px;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            line-height: 1.5;
-            max-height: 150px;
-            overflow-y: auto;
-            display: none;
-        }
-
-        .stat-badge {
-            background-color: var(--stat-bg);
-            padding: 5px 10px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-        .stat-value { color: var(--text-primary); font-weight: 700; margin-left: 5px; }
-
-        .info-box {
-            background-color: var(--info-box-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 10px;
-            text-align: center;
-        }
-        .info-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
-        .info-value { font-size: 0.9rem; color: var(--text-primary); font-weight: 700; }
-
-        .btn-trade { font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px; }
-        .holding-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; width: 100%; }
-
-        .text-primary-theme { color: var(--text-primary) !important; }
-        .text-secondary-theme { color: var(--text-secondary) !important; }
-        .text-muted-theme { color: var(--text-muted) !important; }
-        .price-big { font-size: 3rem; font-weight: 700; letter-spacing: -1px; }
-    </style>
 </head>
 <body>
 
@@ -181,6 +30,10 @@
             <button class="btn btn-outline-secondary btn-sm border-0" onclick="toggleTheme()">
                 <i class="fa-regular fa-moon"></i>
             </button>
+
+            <a href="/logout" class="btn btn-sm btn-outline-danger border-0">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </a>
         </div>
     </div>
 </nav>
@@ -189,6 +42,7 @@
     <div class="row g-4 flex-grow-1 align-items-stretch">
 
         <div class="col-lg-3 col-md-4 d-flex flex-column gap-4">
+
             <div class="dashboard-card flex-shrink-0" style="height: auto;">
                 <h6 class="text-secondary-theme text-uppercase fw-bold mb-3" style="font-size: 0.75rem;">Assets</h6>
                 <div id="coinList">
@@ -221,6 +75,7 @@
                     <h6 class="text-secondary-theme text-uppercase fw-bold mb-0" style="font-size: 0.75rem;">Demo Portfolio</h6>
                     <button class="btn btn-sm btn-outline-secondary" style="font-size: 0.7rem;" onclick="resetPortfolio()"><i class="fa-solid fa-rotate-right"></i> Reset</button>
                 </div>
+
                 <div id="portfolioSetup" class="portfolio-center-wrapper">
                     <div style="width: 100%;">
                         <i class="fa-solid fa-wallet fa-3x text-accent mb-3"></i>
@@ -230,9 +85,10 @@
                             <span class="input-group-text form-control-theme">$</span>
                             <input type="number" id="initialBalance" class="form-control form-control-theme" value="10000">
                         </div>
-                        <button class="btn btn-accent w-100" style="background: var(--accent-color); color: white;" onclick="initPortfolio()">Create Account</button>
+                        <button class="btn btn-accent w-100" style="background: var(--accent-color); color: white;" onclick="initPortfolio()">Start Demo Session</button>
                     </div>
                 </div>
+
                 <div id="portfolioLive" style="display: none; width: 100%;">
                     <div class="text-center mb-4 mt-3">
                         <small class="text-secondary-theme text-uppercase">Total Equity</small>
@@ -313,224 +169,7 @@
     </div>
 </div>
 
-<script>
-    let currentSymbol = 'BTC-USD';
-    let myChart = null;
-    let fgChart = null;
-    let lastPrices = {};
-    const coinDetails = {
-        'BTC-USD': { date: 'Jan 3, 2009', ath: '$126,350.07', atl: '$0.04' },
-        'ETH-USD': { date: 'Jul 30, 2015', ath: '$5031.70', atl: '$0.42' },
-        'SOL-USD': { date: 'Mar 16, 2020', ath: '$260.06', atl: '$0.50' }
-    };
-    let portfolio = { active: false, cash: 0, holdings: { 'BTC-USD': 0, 'ETH-USD': 0, 'SOL-USD': 0 } }
-    function initPortfolio() {
-        const input = document.getElementById('initialBalance');
-        const amount = parseFloat(input.value);
-        if(isNaN(amount) || amount <= 0) { alert("Please enter a valid amount"); return; }
-        portfolio.active = true;
-        portfolio.cash = amount;
-        document.getElementById('portfolioSetup').style.display = 'none';
-        document.getElementById('portfolioLive').style.display = 'block';
-        updatePortfolioUI();
-    }
+<script src="js/app.js"></script>
 
-    function resetPortfolio() {
-        if(!confirm("Reset demo account?")) return;
-        portfolio.active = false;
-        portfolio.cash = 0;
-        portfolio.holdings = { 'BTC-USD': 0, 'ETH-USD': 0, 'SOL-USD': 0 };
-        document.getElementById('portfolioSetup').style.display = 'flex';
-        document.getElementById('portfolioLive').style.display = 'none';
-    }
-
-    function executeTrade(type) {
-        if(!portfolio.active) { alert("Please create a demo account first (Bottom Left)!"); return; }
-        const price = lastPrices[currentSymbol];
-        if(!price) { alert("Waiting for price data..."); return; }
-
-        if(type === 'buy') {
-            const amountUSD = prompt(`Buying ${currentSymbol} at $${price.toLocaleString()}.\nCash: $${portfolio.cash.toLocaleString()}\nEnter USD amount:`);
-            const val = parseFloat(amountUSD);
-            if(val && val > 0 && val <= portfolio.cash) {
-                const units = val / price;
-                portfolio.cash -= val;
-                portfolio.holdings[currentSymbol] += units;
-                updatePortfolioUI();
-            }
-        } else {
-            const unitsHeld = portfolio.holdings[currentSymbol];
-            if(unitsHeld <= 0) { alert("No holdings to sell."); return; }
-            const sellUnits = prompt(`Selling ${currentSymbol}.\nHeld: ${unitsHeld.toFixed(4)}\nEnter Units (or 'all'):`, 'all');
-            let unitsToSell = sellUnits === 'all' ? unitsHeld : parseFloat(sellUnits);
-            if(unitsToSell > 0 && unitsToSell <= unitsHeld) {
-                portfolio.holdings[currentSymbol] -= unitsToSell;
-                portfolio.cash += unitsToSell * price;
-                updatePortfolioUI();
-            }
-        }
-    }
-
-    function updatePortfolioUI() {
-        if(!portfolio.active) return;
-        let totalVal = 0;
-        const listEl = document.getElementById('holdingsList');
-        listEl.innerHTML = "";
-
-        for(const [symbol, units] of Object.entries(portfolio.holdings)) {
-            if(units > 0.000001) {
-                const price = lastPrices[symbol] || 0;
-                const val = units * price;
-                totalVal += val;
-                listEl.innerHTML += `
-                    <div class="holding-item">
-                        <div><span class="fw-bold text-primary-theme">${symbol.split('-')[0]}</span><div class="small text-muted-theme">${units.toFixed(4)}</div></div>
-                        <div class="text-end"><div class="fw-bold text-primary-theme">$${val.toLocaleString('en-US',{maximumFractionDigits:2})}</div></div>
-                    </div>`;
-            }
-        }
-        if(listEl.innerHTML === "") listEl.innerHTML = '<div class="text-center text-muted mt-3 small opacity-50">No active positions</div>';
-
-        document.getElementById('totalEquity').innerText = "$" + (portfolio.cash + totalVal).toLocaleString('en-US', {minimumFractionDigits: 2});
-        document.getElementById('cashBalance').innerText = "Cash: $" + portfolio.cash.toLocaleString('en-US', {minimumFractionDigits: 2});
-    }
-
-    function toggleTheme() {
-        const html = document.documentElement;
-        const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        html.setAttribute('data-theme', newTheme);
-        updateChartTheme(newTheme);
-    }
-    function updateChartTheme(theme) {
-        if (!myChart) return;
-        const isDark = theme === 'dark';
-        myChart.options.scales.y.grid.color = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
-        myChart.update('none');
-    }
-    function initChart() {
-        const ctx = document.getElementById('priceChart').getContext('2d');
-        const gradient = ctx.createLinearGradient(0, 0, 0, 350);
-        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.2)');
-        gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
-        myChart = new Chart(ctx, {
-            type: 'line',
-            data: { labels: [], datasets: [{ label: 'Price', data: [], borderColor: '#3b82f6', backgroundColor: gradient, borderWidth: 2, fill: true, tension: 0.4, pointRadius: 0 }] },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { x: { display: false }, y: { position: 'right', grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#94a3b8' } } },
-                animation: false
-            }
-        });
-        updateChartTheme(document.documentElement.getAttribute('data-theme'));
-    }
-    function initFGChart() {
-        const ctx = document.getElementById('fgChart').getContext('2d');
-        fgChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: { labels: ['Val', 'Rest'], datasets: [{ data: [50, 50], backgroundColor: ['#94a3b8', 'rgba(0,0,0,0.1)'], borderWidth: 0, cutout: '85%', circumference: 180, rotation: 270 }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } }, aspectRatio: 2 }
-        });
-        fetchFGData();
-    }
-    function fetchFGData() {
-        fetch('https://api.alternative.me/fng/?limit=1').then(r => r.json()).then(d => {
-            if(d.data.length > 0) updateFGChart(d.data[0].value, d.data[0].value_classification);
-        });
-    }
-    function updateFGChart(val, text) {
-        fgChart.data.datasets[0].data = [val, 100 - val];
-        let color = val <= 25 ? '#ef4444' : val <= 45 ? '#f59e0b' : val <= 55 ? '#eab308' : val <= 75 ? '#84cc16' : '#10b981';
-        fgChart.data.datasets[0].backgroundColor = [color, document.documentElement.getAttribute('data-theme')==='dark'?'#334155':'#e2e8f0'];
-        fgChart.update();
-        document.getElementById('fgValueDisplay').innerText = val;
-        document.getElementById('fgValueDisplay').style.color = color;
-        document.getElementById('fgTextDisplay').innerText = text;
-    }
-    function connect() {
-        const socket = new SockJS('/ws-market');
-        const stompClient = Stomp.over(socket);
-        stompClient.debug = null;
-        stompClient.connect({}, function () {
-            stompClient.subscribe('/topic/prices', function (message) {
-                handlePriceUpdate(JSON.parse(message.body));
-            });
-        });
-    }
-    function handlePriceUpdate(data) {
-        lastPrices[data.symbol] = data.price;
-        const sideEl = document.getElementById(`price-${data.symbol}`);
-        if (sideEl) {
-            sideEl.innerText = "$" + data.price.toLocaleString('en-US', {minimumFractionDigits: 2});
-            sideEl.style.color = data.price >= (lastPrices[data.symbol] || 0) ? '#10b981' : '#ef4444';
-        }
-        if (data.symbol === currentSymbol) {
-            document.getElementById('mainPriceDisplay').innerText = "$" + data.price.toLocaleString('en-US', {minimumFractionDigits: 2});
-            addDataToChart(data.price);
-        }
-        if(portfolio.active) updatePortfolioUI();
-    }
-    function addDataToChart(data) {
-        const now = new Date().toLocaleTimeString();
-        myChart.data.labels.push(now);
-        myChart.data.datasets[0].data.push(data);
-        if (myChart.data.labels.length > 50) { myChart.data.labels.shift(); myChart.data.datasets[0].data.shift(); }
-        myChart.update('none');
-    }
-    function updateCoinInfo(symbol) {
-        const details = coinDetails[symbol] || { date: '--', ath: '--', atl: '--' };
-        document.getElementById('infoATH').innerText = details.ath;
-        document.getElementById('infoATL').innerText = details.atl;
-        document.getElementById('infoDate').innerText = details.date;
-    }
-    function switchCoin(symbol) {
-        if (currentSymbol === symbol) return;
-        currentSymbol = symbol;
-        document.querySelectorAll('.coin-list-item').forEach(el => el.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-        document.getElementById('chartTitle').innerText = `${symbol.split('-')[0]} Market`;
-
-        const basePrice = symbol.includes('BTC') ? 91000 : symbol.includes('ETH') ? 3100 : 130;
-        document.getElementById('statHigh').innerText = (basePrice * 1.05).toLocaleString(undefined, {maximumFractionDigits: 0});
-        document.getElementById('statLow').innerText = (basePrice * 0.95).toLocaleString(undefined, {maximumFractionDigits: 0});
-        updateCoinInfo(symbol);
-
-        myChart.data.labels = []; myChart.data.datasets[0].data = []; myChart.update();
-        loadHistory(symbol);
-    }
-    function loadHistory(symbol) {
-        fetch(`/api/prices?symbol=${symbol}`).then(r => r.json()).then(data => {
-            data.reverse().forEach(p => {
-                myChart.data.labels.push(new Date(p.timestamp).toLocaleTimeString());
-                myChart.data.datasets[0].data.push(p.price);
-            });
-            myChart.update();
-            if(data.length) document.getElementById('mainPriceDisplay').innerText = "$" + data[data.length-1].price.toLocaleString();
-        });
-    }
-    function askAI() {
-        const btn = document.getElementById('aiBtn');
-        const container = document.getElementById('aiContent');
-        const text = document.getElementById('aiText');
-        container.style.display = 'block';
-        text.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyzing market...';
-        btn.disabled = true;
-        fetch('/api/ai-analysis').then(res => res.text()).then(data => {
-            text.innerHTML = "";
-            let i = 0;
-            function typeWriter() {
-                if (i < data.length) { text.innerHTML += data.charAt(i); i++; setTimeout(typeWriter, 15); }
-                else { btn.disabled = false; }
-            }
-            typeWriter();
-        }).catch(() => { btn.disabled = false; text.innerHTML = "Error."; });
-    }
-
-    window.onload = function() {
-        initChart(); initFGChart(); connect();
-        loadHistory('BTC-USD');
-        updateCoinInfo('BTC-USD');
-    };
-</script>
 </body>
 </html>
