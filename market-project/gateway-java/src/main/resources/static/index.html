@@ -30,6 +30,10 @@
             <button class="btn btn-outline-secondary btn-sm border-0" onclick="toggleTheme()">
                 <i class="fa-regular fa-moon"></i>
             </button>
+
+            <a href="/logout" class="btn btn-sm btn-outline-danger border-0">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </a>
         </div>
     </div>
 </nav>
@@ -38,6 +42,7 @@
     <div class="row g-4 flex-grow-1 align-items-stretch">
 
         <div class="col-lg-3 col-md-4 d-flex flex-column gap-4">
+
             <div class="dashboard-card flex-shrink-0" style="height: auto;">
                 <h6 class="text-secondary-theme text-uppercase fw-bold mb-3" style="font-size: 0.75rem;">Assets</h6>
                 <div id="coinList">
@@ -70,6 +75,7 @@
                     <h6 class="text-secondary-theme text-uppercase fw-bold mb-0" style="font-size: 0.75rem;">Demo Portfolio</h6>
                     <button class="btn btn-sm btn-outline-secondary" style="font-size: 0.7rem;" onclick="resetPortfolio()"><i class="fa-solid fa-rotate-right"></i> Reset</button>
                 </div>
+
                 <div id="portfolioSetup" class="portfolio-center-wrapper">
                     <div style="width: 100%;">
                         <i class="fa-solid fa-wallet fa-3x text-accent mb-3"></i>
@@ -79,9 +85,10 @@
                             <span class="input-group-text form-control-theme">$</span>
                             <input type="number" id="initialBalance" class="form-control form-control-theme" value="10000">
                         </div>
-                        <button class="btn btn-accent w-100" style="background: var(--accent-color); color: white;" onclick="initPortfolio()">Create Account</button>
+                        <button class="btn btn-accent w-100" style="background: var(--accent-color); color: white;" onclick="initPortfolio()">Start Demo Session</button>
                     </div>
                 </div>
+
                 <div id="portfolioLive" style="display: none; width: 100%;">
                     <div class="text-center mb-4 mt-3">
                         <small class="text-secondary-theme text-uppercase">Total Equity</small>
