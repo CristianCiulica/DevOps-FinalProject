@@ -12,6 +12,7 @@ This project is a cloud-native, polyglot distributed system designed for real-ti
 
 The system simulates a high-frequency trading environment where market data is ingested, processed for anomalies and technical indicators (Moving Averages), and broadcasted to a web client via **WebSockets** with low latency.
 
+
 ---
 
 ## System Architecture
