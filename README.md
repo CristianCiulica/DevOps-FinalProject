@@ -53,6 +53,7 @@ Unlike simple proxy applications, the Rust microservice performs edge computing:
 * **Registration Flow:** Fully functional user registration system (`/register.html`) with duplicate user checks.
 * **Session Management:** Secure login/logout flows with encrypted passwords.
 
+
 ### 3. Real-Time Visualization
 * **Dual-Line Charting:** Visualizes both the raw price (Blue) and the Rust-calculated Moving Average (Orange/Dotted) simultaneously.
 * **Live Updates:** The frontend updates via WebSocket push notifications, eliminating the need for page refreshing.
