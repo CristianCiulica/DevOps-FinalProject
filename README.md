@@ -47,6 +47,7 @@ Unlike simple proxy applications, the Rust microservice performs edge computing:
 * **Moving Average Calculation:** Computes the trend line dynamically before data reaches the database.
 * **Statistical Anomaly Detection:** Filters noise and flags significant market events automatically.
 
+
 ### 2. Security & Authentication
 * **Database-backed Authentication:** Not limited to in-memory users.
 * **Registration Flow:** Fully functional user registration system (`/register.html`) with duplicate user checks.
