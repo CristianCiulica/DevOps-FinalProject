@@ -19,6 +19,7 @@ The system simulates a high-frequency trading environment where market data is i
 
 The solution consists of three main containerized services orchestrated via Docker Compose:
 
+
 1.  **Aggregator Service (Rust)**
     * Acts as the data ingestion engine.
     * Fetches live market data from external APIs (Binance).
