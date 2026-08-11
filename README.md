@@ -2,7 +2,6 @@
 
 
 
-
 ![Java](https://img.shields.io/badge/Java-17-007396?style=flat-square&logo=java&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2-6DB33F?style=flat-square&logo=spring&logoColor=white)
 ![Rust](https://img.shields.io/badge/Rust-1.7-000000?style=flat-square&logo=rust&logoColor=white)
